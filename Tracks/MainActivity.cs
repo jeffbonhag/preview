@@ -37,20 +37,26 @@ namespace Tracks
 				// TODO: encode terms properly
 				var request = HttpWebRequest.Create("http://itunes.apple.com/search?term=" + editText.Text);
 				request.Method = "GET";
+				request.Timeout = 500;
 
-				using (HttpWebResponse response = request.GetResponse() as HttpWebResponse) {
-					DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(typeof(Response));
-					Response searchResults = (Response)jsonSerializer.ReadObject(response.GetResponseStream());
-					var url = searchResults.Results[0].PreviewUrl;
-					try {
-						_player.SetDataSource(url);
-					} catch (IllegalStateException e) {
-						_player.Reset();
-						_player.SetDataSource(url);
+				try {
+					using (HttpWebResponse response = request.GetResponse() as HttpWebResponse) {
+						DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(typeof(Response));
+						Response searchResults = (Response)jsonSerializer.ReadObject(response.GetResponseStream());
+						var url = searchResults.Results[0].PreviewUrl;
+						try {
+							_player.SetDataSource(url);
+						} catch (IllegalStateException e) {
+							_player.Reset();
+							_player.SetDataSource(url);
+						}
+						_player.Prepare();
+						_player.Start();
+						button.Text = searchResults.Results[0].ArtistName;
 					}
-					_player.Prepare();
-					_player.Start();
-					button.Text = searchResults.Results[0].ArtistName;
+
+				} catch (System.Net.WebException e) {
+					Toast.MakeText (this, e.Message, ToastLength.Long).Show();
 				}
 			};
 		}
