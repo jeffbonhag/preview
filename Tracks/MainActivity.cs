@@ -10,6 +10,7 @@ using System.Net;
 using System.IO;
 using System.Runtime.Serialization.Json;
 using Android.Media;
+using Java.Lang;
 
 namespace Tracks
 {
@@ -32,14 +33,21 @@ namespace Tracks
 			Button button = FindViewById<Button> (Resource.Id.myButton);
 			
 			button.Click += delegate {
-				var request = HttpWebRequest.Create("http://itunes.apple.com/search?term=roxanne");
+				EditText editText = FindViewById<EditText> (Resource.Id.terms);
+				// TODO: encode terms properly
+				var request = HttpWebRequest.Create("http://itunes.apple.com/search?term=" + editText.Text);
 				request.Method = "GET";
 
 				using (HttpWebResponse response = request.GetResponse() as HttpWebResponse) {
 					DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(typeof(Response));
 					Response searchResults = (Response)jsonSerializer.ReadObject(response.GetResponseStream());
 					var url = searchResults.Results[0].PreviewUrl;
-					_player.SetDataSource(url);
+					try {
+						_player.SetDataSource(url);
+					} catch (IllegalStateException e) {
+						_player.Reset();
+						_player.SetDataSource(url);
+					}
 					_player.Prepare();
 					_player.Start();
 					button.Text = searchResults.Results[0].ArtistName;
