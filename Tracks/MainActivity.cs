@@ -33,11 +33,11 @@ namespace Tracks
 			Button button = FindViewById<Button> (Resource.Id.myButton);
 			
 			button.Click += delegate {
-				EditText editText = FindViewById<EditText> (Resource.Id.terms);
+				SearchView searchTerms = FindViewById<SearchView> (Resource.Id.terms);
 				// TODO: encode terms properly
-				var request = HttpWebRequest.Create("http://itunes.apple.com/search?term=" + editText.Text);
+				var request = HttpWebRequest.Create("http://itunes.apple.com/search?term=" + searchTerms.Query);
 				request.Method = "GET";
-				request.Timeout = 500;
+				request.Timeout = 1000;
 
 				try {
 					using (HttpWebResponse response = request.GetResponse() as HttpWebResponse) {
