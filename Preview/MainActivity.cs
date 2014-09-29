@@ -33,6 +33,7 @@ namespace Preview
 			_searchView.SetIconifiedByDefault (false);
 			_searchView.QueryTextSubmit += (sender, e) => {
 				PlayFirstResult(e.Query);
+				_searchView.SetQuery("", false);
 			};
 		}
 
@@ -48,6 +49,8 @@ namespace Preview
 					Response searchResults = (Response)jsonSerializer.ReadObject(response.GetResponseStream());
 					var result = searchResults.Results[0];
 					var fileName = DownloadPreview(result.PreviewUrl, result.ArtistName, result.TrackName);
+					AddFileToMediaLibrary(fileName);
+
 					try {
 						_player.SetDataSource(fileName);
 					} catch (IllegalStateException e) {
@@ -69,6 +72,12 @@ namespace Preview
 			var webClient = new WebClient ();
 			webClient.DownloadFile(address, fileName);
 			return fileName;
+		}
+
+		void AddFileToMediaLibrary(string fileName) {
+			Intent intent = new Intent(Intent.ActionMediaScannerScanFile);
+			intent.SetData (Android.Net.Uri.FromFile (new Java.IO.File (fileName)));
+			SendBroadcast (intent);
 		}
 	}
 }
