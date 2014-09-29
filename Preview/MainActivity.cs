@@ -1,5 +1,4 @@
 ﻿using System;
-
 using Android.App;
 using Android.Content;
 using Android.Runtime;
@@ -47,12 +46,13 @@ namespace Preview
 				using (HttpWebResponse response = request.GetResponse() as HttpWebResponse) {
 					DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(typeof(Response));
 					Response searchResults = (Response)jsonSerializer.ReadObject(response.GetResponseStream());
-					var url = searchResults.Results[0].PreviewUrl;
+					var result = searchResults.Results[0];
+					var fileName = DownloadPreview(result.PreviewUrl, result.ArtistName, result.TrackName);
 					try {
-						_player.SetDataSource(url);
+						_player.SetDataSource(fileName);
 					} catch (IllegalStateException e) {
 						_player.Reset();
-						_player.SetDataSource(url);
+						_player.SetDataSource(fileName);
 					}
 					_player.Prepare();
 					_player.Start();
@@ -61,6 +61,14 @@ namespace Preview
 			} catch (System.Net.WebException e) {
 				Toast.MakeText (this, e.Message, ToastLength.Long).Show();
 			}
+		}
+
+		string DownloadPreview(string address, string artistName, string trackName) {
+			var storagePath = Android.OS.Environment.ExternalStorageDirectory.AbsolutePath;
+			var fileName = Path.Combine(storagePath, string.Format("{0} - {1}.m4a", artistName, trackName));
+			var webClient = new WebClient ();
+			webClient.DownloadFile(address, fileName);
+			return fileName;
 		}
 	}
 }
