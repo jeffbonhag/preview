@@ -18,6 +18,7 @@ namespace Tracks
 	public class MainActivity : Activity
 	{
 		MediaPlayer _player;
+		SearchView _searchView;
 
 		protected override void OnCreate (Bundle bundle)
 		{
@@ -28,37 +29,38 @@ namespace Tracks
 			// Set our view from the "main" layout resource
 			SetContentView (Resource.Layout.Main);
 
-			// Get our button from the layout resource,
-			// and attach an event to it
-			Button button = FindViewById<Button> (Resource.Id.myButton);
-			
-			button.Click += delegate {
-				SearchView searchTerms = FindViewById<SearchView> (Resource.Id.terms);
-				// TODO: encode terms properly
-				var request = HttpWebRequest.Create("http://itunes.apple.com/search?term=" + searchTerms.Query);
-				request.Method = "GET";
-				request.Timeout = 1000;
-
-				try {
-					using (HttpWebResponse response = request.GetResponse() as HttpWebResponse) {
-						DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(typeof(Response));
-						Response searchResults = (Response)jsonSerializer.ReadObject(response.GetResponseStream());
-						var url = searchResults.Results[0].PreviewUrl;
-						try {
-							_player.SetDataSource(url);
-						} catch (IllegalStateException e) {
-							_player.Reset();
-							_player.SetDataSource(url);
-						}
-						_player.Prepare();
-						_player.Start();
-						button.Text = searchResults.Results[0].ArtistName;
-					}
-
-				} catch (System.Net.WebException e) {
-					Toast.MakeText (this, e.Message, ToastLength.Long).Show();
-				}
+			// Prepare the search box
+			_searchView = FindViewById<SearchView> (Resource.Id.searchView);
+			_searchView.SetIconifiedByDefault (false);
+			_searchView.QueryTextSubmit += (sender, e) => {
+				PlayFirstResult(e.Query);
 			};
+		}
+
+		void PlayFirstResult(string term) {
+			// TODO: encode term properly
+			var request = HttpWebRequest.Create("http://itunes.apple.com/search?term=" + term);
+			request.Method = "GET";
+			request.Timeout = 2000;
+
+			try {
+				using (HttpWebResponse response = request.GetResponse() as HttpWebResponse) {
+					DataContractJsonSerializer jsonSerializer = new DataContractJsonSerializer(typeof(Response));
+					Response searchResults = (Response)jsonSerializer.ReadObject(response.GetResponseStream());
+					var url = searchResults.Results[0].PreviewUrl;
+					try {
+						_player.SetDataSource(url);
+					} catch (IllegalStateException e) {
+						_player.Reset();
+						_player.SetDataSource(url);
+					}
+					_player.Prepare();
+					_player.Start();
+				}
+
+			} catch (System.Net.WebException e) {
+				Toast.MakeText (this, e.Message, ToastLength.Long).Show();
+			}
 		}
 	}
 }
