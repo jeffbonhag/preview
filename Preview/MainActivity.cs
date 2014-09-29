@@ -53,7 +53,7 @@ namespace Preview
 
 					try {
 						_player.SetDataSource(fileName);
-					} catch (IllegalStateException e) {
+					} catch (IllegalStateException) {
 						_player.Reset();
 						_player.SetDataSource(fileName);
 					}
