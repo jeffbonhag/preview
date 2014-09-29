@@ -12,9 +12,9 @@ using System.Runtime.Serialization.Json;
 using Android.Media;
 using Java.Lang;
 
-namespace Tracks
+namespace Preview
 {
-	[Activity (Label = "Tracks", MainLauncher = true, Icon = "@drawable/icon")]
+	[Activity (Label = "Preview", MainLauncher = true, Icon = "@drawable/icon")]
 	public class MainActivity : Activity
 	{
 		MediaPlayer _player;

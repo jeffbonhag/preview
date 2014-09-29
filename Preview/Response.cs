@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace Tracks
+namespace Preview
 {
 	[DataContract]
 	public class Response
