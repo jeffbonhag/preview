@@ -16,14 +16,11 @@ namespace Preview
 	[Activity (Label = "Preview", MainLauncher = true, Icon = "@drawable/icon")]
 	public class MainActivity : Activity
 	{
-		MediaPlayer _player;
 		SearchView _searchView;
 
 		protected override void OnCreate (Bundle bundle)
 		{
 			base.OnCreate (bundle);
-
-			_player = new MediaPlayer();
 
 			// Set our view from the "main" layout resource
 			SetContentView (Resource.Layout.Main);
@@ -50,17 +47,8 @@ namespace Preview
 					var result = searchResults.Results[0];
 					var fileName = DownloadPreview(result.PreviewUrl, result.ArtistName, result.TrackName);
 					AddFileToMediaLibrary(fileName);
-
-					try {
-						_player.SetDataSource(fileName);
-					} catch (IllegalStateException) {
-						_player.Reset();
-						_player.SetDataSource(fileName);
-					}
-					_player.Prepare();
-					_player.Start();
+					Play(fileName);
 				}
-
 			} catch (System.Net.WebException e) {
 				Toast.MakeText (this, e.Message, ToastLength.Long).Show();
 			}
@@ -78,6 +66,13 @@ namespace Preview
 			Intent intent = new Intent(Intent.ActionMediaScannerScanFile);
 			intent.SetData (Android.Net.Uri.FromFile (new Java.IO.File (fileName)));
 			SendBroadcast (intent);
+		}
+
+		void Play(string fileName) {
+			var player = new MediaPlayer();
+			player.SetDataSource (fileName);
+			player.Prepare ();
+			player.Start ();
 		}
 	}
 }
